@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>RADJ! – Die Brot-Katapult</title>
+  <meta name="description" content="Katapultiere deine Frau so weit wie möglich – prall von Brot, Bäumen und goldenen Überraschungen ab.">
+  <link rel="stylesheet" href="style.css?v=2">
+</head>
+<body>
+  <div id="app">
+    <!-- Spielfläche (Canvas) -->
+    <canvas id="game" aria-label="Spielfläche"></canvas>
+
+    <!-- HUD während des Spiels -->
+    <div id="hud" class="hidden">
+      <div class="hud-card hud-distance">
+        <span class="hud-label">Distanz</span>
+        <span class="hud-value"><span id="hudDistance">0</span><small>m</small></span>
+      </div>
+      <div class="hud-card hud-speed">
+        <span class="hud-label">Tempo</span>
+        <span class="hud-value"><span id="hudSpeed">0</span><small>km/h</small></span>
+      </div>
+      <div class="hud-card hud-coins">
+        <span class="hud-coin"></span>
+        <span class="hud-value" id="hudCoins">0</span>
+      </div>
+      <div class="hud-card hud-record">
+        <span class="hud-label">Rekord</span>
+        <span class="hud-value"><span id="hudRecord">0</span><small>m</small></span>
+      </div>
+      <div id="hudBounce" class="hud-bounce hidden"></div>
+      <button id="btnPause" class="btn btn-icon" aria-label="Pause">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1.2"/><rect x="14" y="5" width="4" height="14" rx="1.2"/></svg>
+      </button>
+      <div id="hudHint" class="hud-hint hidden">Ziehen zum Zielen · Loslassen zum Abschuss</div>
+      <div id="hudFlight" class="hud-hint hidden">Halten für Flugkontrolle</div>
+    </div>
+
+    <!-- Hauptmenü -->
+    <section id="screenMenu" class="screen active">
+      <div class="menu-bg-glow"></div>
+      <div class="menu-inner">
+        <div class="logo">
+          <h1 class="logo-title"><span>RADJ</span><em>!</em></h1>
+          <p class="logo-sub">Die Brot-Katapult</p>
+        </div>
+        <canvas id="menuStage" class="menu-stage" width="640" height="260" aria-hidden="true"></canvas>
+        <div class="menu-buttons">
+          <button class="btn btn-primary" data-action="play">Start</button>
+          <button class="btn" data-action="shop">Shop</button>
+          <button class="btn" data-action="upgrades">Verbesserungen</button>
+          <button class="btn" data-action="achievements">Erfolge</button>
+          <button class="btn" data-action="stats">Statistik</button>
+          <button class="btn" data-action="settings">Einstellungen</button>
+        </div>
+        <p class="menu-footer">Coins: <strong id="menuCoins">0</strong> · Rekord: <strong id="menuRecord">0 m</strong></p>
+      </div>
+    </section>
+
+    <!-- Shop -->
+    <section id="screenShop" class="screen panel-screen">
+      <div class="panel">
+        <header class="panel-head">
+          <h2>Shop</h2>
+          <div class="panel-coins"><span class="hud-coin"></span><span id="shopCoins">0</span></div>
+        </header>
+        <div class="tabs" role="tablist">
+          <button class="tab active" data-tab="catapults">Katapulte</button>
+          <button class="tab" data-tab="skins">Kleidung</button>
+        </div>
+        <div id="shopList" class="item-list"></div>
+        <button class="btn back-btn" data-action="menu">Zurück</button>
+      </div>
+    </section>
+
+    <!-- Verbesserungen -->
+    <section id="screenUpgrades" class="screen panel-screen">
+      <div class="panel">
+        <header class="panel-head">
+          <h2>Verbesserungen</h2>
+          <div class="panel-coins"><span class="hud-coin"></span><span id="upgCoins">0</span></div>
+        </header>
+        <div id="upgradeList" class="item-list"></div>
+        <button class="btn back-btn" data-action="menu">Zurück</button>
+      </div>
+    </section>
+
+    <!-- Erfolge -->
+    <section id="screenAchievements" class="screen panel-screen">
+      <div class="panel">
+        <header class="panel-head"><h2>Erfolge</h2><div class="panel-coins"><span id="achCount">0/0</span></div></header>
+        <div id="achList" class="item-list"></div>
+        <button class="btn back-btn" data-action="menu">Zurück</button>
+      </div>
+    </section>
+
+    <!-- Statistik -->
+    <section id="screenStats" class="screen panel-screen">
+      <div class="panel">
+        <header class="panel-head"><h2>Statistik</h2></header>
+        <div id="statsList" class="stats-grid"></div>
+        <button class="btn back-btn" data-action="menu">Zurück</button>
+      </div>
+    </section>
+
+    <!-- Einstellungen -->
+    <section id="screenSettings" class="screen panel-screen">
+      <div class="panel">
+        <header class="panel-head"><h2>Einstellungen</h2></header>
+        <div class="settings-list">
+          <label class="switch-row"><span>Musik</span><input type="checkbox" id="optMusic"><span class="switch"></span></label>
+          <label class="switch-row"><span>Soundeffekte</span><input type="checkbox" id="optSfx"><span class="switch"></span></label>
+          <label class="switch-row"><span>Screen-Shake</span><input type="checkbox" id="optShake"><span class="switch"></span></label>
+          <label class="slider-row"><span>Lautstärke</span><input type="range" id="optVolume" min="0" max="100"></label>
+          <button class="btn btn-danger" id="btnReset">Fortschritt zurücksetzen</button>
+        </div>
+        <button class="btn back-btn" data-action="menu">Zurück</button>
+      </div>
+    </section>
+
+    <!-- Pause -->
+    <section id="screenPause" class="screen overlay">
+      <div class="panel panel-small">
+        <h2>Pause</h2>
+        <button class="btn btn-primary" data-action="resume">Weiter</button>
+        <button class="btn" data-action="restart">Neu starten</button>
+        <button class="btn" data-action="menu">Hauptmenü</button>
+      </div>
+    </section>
+
+    <!-- Rundenende -->
+    <section id="screenResult" class="screen overlay">
+      <div class="panel result-panel">
+        <p class="result-tag" id="resultTag">Landung!</p>
+        <div class="result-distance"><span id="resDistance">0</span><small>m</small></div>
+        <p class="result-record hidden" id="resRecord">Neuer Rekord!</p>
+        <div class="result-grid">
+          <div><span>Verdiente Coins</span><strong id="resCoins">0</strong></div>
+          <div><span>Bounces</span><strong id="resBounces">0</strong></div>
+          <div><span>Höchstes Tempo</span><strong id="resSpeed">0 km/h</strong></div>
+          <div><span>Goldene Brote</span><strong id="resGolden">0</strong></div>
+        </div>
+        <div class="result-buttons">
+          <button class="btn btn-primary" data-action="restart">Erneut spielen</button>
+          <button class="btn" data-action="upgrades">Verbesserungen</button>
+          <button class="btn" data-action="menu">Menü</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Achievement-Benachrichtigung -->
+    <div id="toastHost" class="toast-host" aria-live="polite"></div>
+
+    <!-- Story-Skip & Dialog-Hinweis -->
+    <button id="btnSkip" class="btn btn-skip hidden">Überspringen</button>
+
+    <div id="rotateHint" class="rotate-hint">Bitte Gerät drehen für das beste Erlebnis</div>
+  </div>
+
+  <script src="assets.js?v=5"></script>
+  <script src="physics.js?v=5"></script>
+  <script src="animations.js?v=5"></script>
+  <script src="audio.js?v=5"></script>
+  <script src="ui.js?v=5"></script>
+  <script src="game.js?v=5"></script>
+</body>
+</html>
